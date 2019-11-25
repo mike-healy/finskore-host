@@ -2,38 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\Game\Token;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Redis;
+
 use function GuzzleHttp\json_encode;
 
 class GameController extends Controller
 {
 
+    /*
+    @jaaprood has suggested that there's no need to store the game data on the server at all.
+    When updated it can just be pushed immediately to Ably as a persistent message.
+    New clients subscribing to the channel will get the game state from ably.
+
+    Saves having to Gargabe Collect here.
+
+    Except the size might get too big at some point.
+    I think I'll maintain an index of games and purge untouched ones after N hours.
+    */
+    
     /**
-     * Start and store a new game/session
-     *
+     * Start a new game session
+     * todo: Prefix Redis store name, extract this code generation logic to its own class.
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request)
     {
-        //Generate new code and secret code allowing Leader to publish game 
-
-        $makeCode = function() {
-            $code = md5( microtime(true) . time() . mt_rand(1,99999) );
-            return strtoupper( substr($code, 5,6) );
-        };
-        
-        
-        $code = $makeCode();
-        while( substr($code, 0, 1) === '0' || Redis::exists($code) ) {
-            $code = $makeCode();
+        //Generate new code and secret code allowing Leader to publish game
+        //Todo: namespace or prefix the Redis store
+        $code = Token::makePublic();
+        while (Redis::exists($code)) {
+            $code = Token::makePublic();
         }
 
         //Store empty game in Redis
+        $ip = $_SERVER['REMOTE_ADDR'] ?? null;
+
         $gameData = [
-            'secret' => sha1( mt_rand(1, 10*1000*1000) . microtime(true) . $_SERVER['REMOTE_ADDR'] ), //used by host to write
-            'created' => time(),
+            'secret'     => Token::makeSecret($ip),
+            'created'    => time(),
             'clientData' => null, //the Finska client game state
         ];
 
@@ -44,6 +53,14 @@ class GameController extends Controller
             'code'   => $code,
             'secret' => $gameData['secret']
         ];
+
+        /*
+        Don't manipulate Redis directly from controller.
+        Create a game object.
+
+        Can you have a model that is not Eloquent.
+
+        */
     }
 
     /**
@@ -53,7 +70,7 @@ class GameController extends Controller
      */
     public function show($code)
     {
-        if(!Redis::exists($code)) {
+        if (!Redis::exists($code)) {
             return response()->json(['message' => 'Unknown game'], 404);
         }
 
@@ -81,20 +98,19 @@ class GameController extends Controller
             'state'  => 'min:20'
         ]); */
 
-        //$code   = $request->get('code');
         $secret = $request->get('secret');
 
-        if( !$state = json_decode($request->get('state')) ) {
+        if (!$state = json_decode($request->get('state'))) {
             return response()->json(['message' => 'Invalid JSON game state'], 403);
         }
 
-        if(!Redis::exists($code)) {
-            return response()->json(['message' => 'Unknown game'], 404);
+        if (!Redis::exists($code)) {
+            return response()->json(['message' => 'Unknown game'], 401);
         }
 
-        $gameData = json_decode( Redis::get($code) );
-        if( !isset($gameData->secret) || $secret !== $gameData->secret ) {
-            return response()->json(['message' => "You don't have access to update this game"], 401);
+        $gameData = json_decode(Redis::get($code));
+        if (!isset($gameData->secret) || $secret !== $gameData->secret) {
+            return response()->json(['message' => 'Unknown game'], 401);
         }
 
         $gameData->clientData = $state;
@@ -112,6 +128,6 @@ class GameController extends Controller
      */
     public function destroy($id)
     {
-        //fuck shit up ya'll 
+        //end game
     }
 }
