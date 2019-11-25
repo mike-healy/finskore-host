@@ -4,8 +4,115 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b79b87adff9c8f583ebdd3f0377e514f",
+    "content-hash": "19ee25a559e205cfaa52a9cfa01bf878",
     "packages": [
+        {
+            "name": "ably/ably-php",
+            "version": "1.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ably/ably-php.git",
+                "reference": "c8602c645e64277d4f9af6c10af855983473c792"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ably/ably-php/zipball/c8602c645e64277d4f9af6c10af855983473c792",
+                "reference": "c8602c645e64277d4f9af6c10af855983473c792",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-openssl": "*",
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": ">=4.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Ably\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Ably",
+                    "email": "support@ably.io"
+                }
+            ],
+            "description": "Ably REST client library for PHP.",
+            "homepage": "https://www.ably.io/",
+            "keywords": [
+                "ably",
+                "messages",
+                "messaging"
+            ],
+            "time": "2017-05-16T13:26:28+00:00"
+        },
+        {
+            "name": "ably/ably-php-laravel",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ably/ably-php-laravel.git",
+                "reference": "b132057af3a4bc45056230f5b5848ef3d636dd7e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ably/ably-php-laravel/zipball/b132057af3a4bc45056230f5b5848ef3d636dd7e",
+                "reference": "b132057af3a4bc45056230f5b5848ef3d636dd7e",
+                "shasum": ""
+            },
+            "require": {
+                "ably/ably-php": "~1.0.1",
+                "laravel/framework": ">=5.1.0",
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "orchestra/testbench": "~3.2",
+                "phpunit/phpunit": ">=4.5"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Ably\\Laravel\\AblyServiceProvider"
+                    ],
+                    "aliases": {
+                        "Ably": "Ably\\Laravel\\Facades\\Ably"
+                    }
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Ably\\Laravel\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Ably",
+                    "email": "support@ably.io"
+                }
+            ],
+            "description": "Ably realtime REST PHP library wrapper for Laravel",
+            "homepage": "https://www.ably.io/",
+            "keywords": [
+                "ably",
+                "laravel",
+                "messaging",
+                "rest"
+            ],
+            "time": "2017-12-20T13:16:12+00:00"
+        },
         {
             "name": "dnoegel/php-xdg-base-dir",
             "version": "0.1",
