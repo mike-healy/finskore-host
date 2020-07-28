@@ -10,7 +10,6 @@ use function GuzzleHttp\json_encode;
 
 class GameController extends Controller
 {
-
     /*
     @jaaprood has suggested that there's no need to store the game data on the server at all.
     When updated it can just be pushed immediately to Ably as a persistent message.
@@ -32,9 +31,9 @@ class GameController extends Controller
     {
         //Generate new code and secret code allowing Leader to publish game
         //Todo: namespace or prefix the Redis store
-        $code = Token::makePublic();
+        $code = Token::makePublicCode();
         while (Redis::exists($code)) {
-            $code = Token::makePublic();
+            $code = Token::makePublicCode();
         }
 
         //Store empty game in Redis
@@ -57,25 +56,24 @@ class GameController extends Controller
         /*
         Don't manipulate Redis directly from controller.
         Create a game object.
-
-        Can you have a model that is not Eloquent.
-
         */
     }
 
     /**
      * Get JSON game state
-     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
     public function show($code)
     {
+        //Middleware to throttle gueses? If not a match increment count for user
+        //idenitified by IP/UA? How does the brute force throttle work?
+
         if (!Redis::exists($code)) {
             return response()->json(['message' => 'Unknown game'], 404);
         }
 
         $data = json_decode(Redis::get($code));
-        return $data->clientData;
+        return response()->json($data->clientData);
     }
 
 
@@ -98,9 +96,9 @@ class GameController extends Controller
             'state'  => 'min:20'
         ]); */
 
-        $secret = $request->get('secret');
+        $secret = $request->input('secret');
 
-        if (!$state = json_decode($request->get('state'))) {
+        if (!$state = json_decode($request->input('state'))) {
             return response()->json(['message' => 'Invalid JSON game state'], 403);
         }
 
